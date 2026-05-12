@@ -42,6 +42,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Lockfile (CI uses npm install, not npm ci)
+package-lock.json
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
