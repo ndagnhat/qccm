@@ -1,6 +1,13 @@
 export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss'],
+  runtimeConfig: {
+    public: {
+      // Paste Google Sheet ID here (or set env var NUXT_PUBLIC_SHEET_ID)
+      // Sheet must be public: Share → Anyone with the link → Viewer
+      sheetId: '',
+    },
+  },
   css: ['~/assets/css/main.css'],
   app: {
     baseURL: '/qccm/',

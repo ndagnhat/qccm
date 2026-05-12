@@ -23,37 +23,33 @@
   </section>
 </template>
 
-<script setup>
-const services = [
-  {
-    icon: '💡',
-    title: 'Biển LED & Hộp Đèn',
-    desc: 'Thi công biển LED nội sáng, hộp đèn mica cao cấp, nổi bật ngày và đêm. Tiết kiệm điện, bền bỉ theo thời gian.',
-  },
-  {
-    icon: '🖨️',
-    title: 'In Banner & Hiflex',
-    desc: 'In banner khổ lớn, hiflex ngoài trời chất lượng cao. Màu sắc tươi sáng, chịu mưa nắng, không bạc màu.',
-  },
-  {
-    icon: '🏪',
-    title: 'Bảng Alu & Alu Composite',
-    desc: 'Gia công bảng hiệu alu, alu composite dày dặn, chống cong vênh, phù hợp làm biển cửa hàng, văn phòng.',
-  },
-  {
-    icon: '🎨',
-    title: 'In Decal & Sticker',
-    desc: 'In decal trong, đục, phản quang, dán kính, dán xe. Kích thước tùy chọn, cắt theo hình dạng yêu cầu.',
-  },
-  {
-    icon: '🖼️',
-    title: 'Backdrop & Standee',
-    desc: 'In backdrop sự kiện, standee X-banner chất lượng cao. Giao hàng nhanh trong ngày khi cần gấp.',
-  },
-  {
-    icon: '🔧',
-    title: 'Thi Công Trọn Gói',
-    desc: 'Lắp đặt biển hiệu tận nơi toàn quốc. Đội thợ chuyên nghiệp, bảo hành 12 tháng sau lắp đặt.',
-  },
+<script setup lang="ts">
+const defaultServices = [
+  { icon: '💡', title: 'Biển LED & Hộp Đèn', desc: 'Thi công biển LED nội sáng, hộp đèn mica cao cấp, nổi bật ngày và đêm. Tiết kiệm điện, bền bỉ theo thời gian.' },
+  { icon: '🖨️', title: 'In Banner & Hiflex', desc: 'In banner khổ lớn, hiflex ngoài trời chất lượng cao. Màu sắc tươi sáng, chịu mưa nắng, không bạc màu.' },
+  { icon: '🏪', title: 'Bảng Alu & Alu Composite', desc: 'Gia công bảng hiệu alu, alu composite dày dặn, chống cong vênh, phù hợp làm biển cửa hàng, văn phòng.' },
+  { icon: '🎨', title: 'In Decal & Sticker', desc: 'In decal trong, đục, phản quang, dán kính, dán xe. Kích thước tùy chọn, cắt theo hình dạng yêu cầu.' },
+  { icon: '🖼️', title: 'Backdrop & Standee', desc: 'In backdrop sự kiện, standee X-banner chất lượng cao. Giao hàng nhanh trong ngày khi cần gấp.' },
+  { icon: '🔧', title: 'Thi Công Trọn Gói', desc: 'Lắp đặt biển hiệu tận nơi toàn quốc. Đội thợ chuyên nghiệp, bảo hành 12 tháng sau lắp đặt.' },
 ]
+
+const config = useRuntimeConfig()
+const services = ref(defaultServices)
+
+onMounted(async () => {
+  const sheetId = config.public.sheetId as string
+  if (!sheetId) return
+  try {
+    const rows = await fetchSheetTab(sheetId, 'services')
+    if (rows.length) {
+      services.value = rows.map(r => ({
+        icon: r.icon || '🔧',
+        title: r.title || '',
+        desc: r.description || '',
+      })).filter(s => s.title)
+    }
+  } catch (e) {
+    console.warn('[QCCM] Could not load services from sheet, using defaults.', e)
+  }
+})
 </script>

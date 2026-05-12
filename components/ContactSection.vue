@@ -28,11 +28,11 @@
             Gửi yêu cầu và nhận báo giá chi tiết trong vòng 30 phút làm việc. Không phát sinh phí tư vấn.
           </p>
           <div class="flex flex-col gap-3">
-            <a href="tel:0900000000"
+            <a :href="`tel:${phoneTel}`"
               class="bg-white text-red-600 font-bold px-6 py-3.5 rounded-xl text-center hover:bg-red-50 transition-colors text-lg">
-              📞 Gọi Ngay: 0900 000 000
+              📞 Gọi Ngay: {{ phoneDisplay }}
             </a>
-            <a href="https://zalo.me/0900000000" target="_blank" rel="noopener"
+            <a :href="zaloUrl" target="_blank" rel="noopener"
               class="bg-red-700/50 border border-white/20 text-white font-bold px-6 py-3.5 rounded-xl text-center hover:bg-red-700 transition-colors text-lg">
               💬 Nhắn Zalo
             </a>
@@ -43,31 +43,38 @@
   </section>
 </template>
 
-<script setup>
-const contactInfo = [
-  {
-    icon: '📞',
-    label: 'Hotline',
-    value: '0900 000 000',
-    sub: 'Hỗ trợ 8:00 – 21:00 mỗi ngày',
-  },
-  {
-    icon: '📍',
-    label: 'Địa Chỉ',
-    value: '123 Đường ABC, Quận XYZ',
-    sub: 'TP. Hồ Chí Minh, Việt Nam',
-  },
-  {
-    icon: '📧',
-    label: 'Email',
-    value: 'contact@qccm.vn',
-    sub: 'Phản hồi trong vòng 24 giờ',
-  },
-  {
-    icon: '🕐',
-    label: 'Giờ Làm Việc',
-    value: 'Thứ 2 – Thứ 7: 8:00 – 18:00',
-    sub: 'Chủ Nhật: 8:00 – 12:00',
-  },
+<script setup lang="ts">
+const defaultContactInfo = [
+  { icon: '📞', label: 'Hotline', value: '0900 000 000', sub: 'Hỗ trợ 8:00 – 21:00 mỗi ngày' },
+  { icon: '📍', label: 'Địa Chỉ', value: '123 Đường ABC, Quận XYZ', sub: 'TP. Hồ Chí Minh, Việt Nam' },
+  { icon: '📧', label: 'Email', value: 'contact@qccm.vn', sub: 'Phản hồi trong vòng 24 giờ' },
+  { icon: '🕐', label: 'Giờ Làm Việc', value: 'Thứ 2 – Thứ 7: 8:00 – 18:00', sub: 'Chủ Nhật: 8:00 – 12:00' },
 ]
+
+const config = useRuntimeConfig()
+const contactInfo = ref(defaultContactInfo)
+const phoneDisplay = ref('0900 000 000')
+const phoneTel = ref('0900000000')
+const zaloUrl = ref('https://zalo.me/0900000000')
+
+onMounted(async () => {
+  const sheetId = config.public.sheetId as string
+  if (!sheetId) return
+  try {
+    const rows = await fetchSheetTab(sheetId, 'contact')
+    if (rows.length) {
+      contactInfo.value = rows
+        .filter(r => r.label && !r.label.startsWith('_'))
+        .map(r => ({ icon: r.icon || '📌', label: r.label, value: r.value || '', sub: r.sub || '' }))
+
+      // Special config rows prefixed with _
+      const phone = rows.find(r => r.label === '_phone')
+      const zalo = rows.find(r => r.label === '_zalo')
+      if (phone) { phoneTel.value = phone.value; phoneDisplay.value = phone.sub || phone.value }
+      if (zalo) zaloUrl.value = zalo.value
+    }
+  } catch (e) {
+    console.warn('[QCCM] Could not load contact from sheet, using defaults.', e)
+  }
+})
 </script>
